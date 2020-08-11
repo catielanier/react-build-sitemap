@@ -14,10 +14,12 @@ const buildSitemap = (fileName, buildPath, url) => {
     throw new warn("Component does not exist to generate sitemap. Skipping.");
   }
   //read through jsx
-  const jsxTree = babelParser.parse(fileName, {
-    sourceType: "module",
-    plugins: ["jsx"],
-  });
+  const jsxTree = JSON.stringify(
+    babelParser.parse(fileName, {
+      sourceType: "module",
+      plugins: ["babel-plugin-transform-react-jsx"],
+    })
+  );
   //find the 'router', 'browserrouter', or 'switch' element.
   const router = mapJson(jsxTree);
   //if the above elements exist, map through all routes.
@@ -33,7 +35,10 @@ const buildSitemap = (fileName, buildPath, url) => {
     );
   }
   //generate xml file string.
+  sitemapElements.push("</urlset>");
+  const xml = sitemapElements.join("");
   //write sitemap.xml file to build path.
+  fs.writeFile(`${buildPath}/sitemap.xml`, xml);
 };
 
 buildSitemap.propTypes = {
