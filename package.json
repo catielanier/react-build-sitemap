@@ -22,5 +22,10 @@
   "bugs": {
     "url": "https://github.com/lanierc/react-build-sitemap/issues"
   },
-  "homepage": "https://github.com/lanierc/react-build-sitemap#readme"
+  "homepage": "https://github.com/lanierc/react-build-sitemap#readme",
+  "dependencies": {
+    "@babel/parser": "^7.11.3",
+    "fs": "0.0.1-security",
+    "prop-types": "^15.7.2"
+  }
 }
