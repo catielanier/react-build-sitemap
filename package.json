@@ -37,8 +37,10 @@
   "type": "module",
   "devDependencies": {
     "@babel/core": "^7.11.1",
+    "@babel/node": "^7.10.5",
     "@babel/parser": "^7.11.3",
     "@babel/plugin-syntax-jsx": "^7.10.4",
-    "babel-plugin-transform-react-jsx": "^6.24.1"
+    "babel-plugin-transform-react-jsx": "^6.24.1",
+    "jsx": "^0.9.89"
   }
 }
