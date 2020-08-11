@@ -2,9 +2,10 @@
   "name": "react-build-sitemap",
   "version": "0.1.0",
   "description": "simple library that generates a sitemap from your react router",
-  "main": "index.js",
+  "main": "./index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node index.js"
   },
   "repository": {
     "type": "git",
@@ -24,8 +25,17 @@
   },
   "homepage": "https://github.com/lanierc/react-build-sitemap#readme",
   "dependencies": {
-    "@babel/parser": "^7.11.3",
     "fs": "0.0.1-security",
-    "prop-types": "^15.7.2"
+    "prop-types": "^15.7.2",
+    "react": "^16.13.1"
+  },
+  "peerDependencies": {
+    "react": "^16.13.1"
+  },
+  "type": "module",
+  "devDependencies": {
+    "@babel/core": "^7.11.1",
+    "@babel/parser": "^7.11.3",
+    "@babel/plugin-syntax-jsx": "^7.10.4"
   }
 }

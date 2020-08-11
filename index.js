@@ -27,6 +27,11 @@ const buildSitemap = (fileName, buildPath, url) => {
     });
   }
   //if does not exist, throw a warning saying it doesn't exist and skip running.
+  if (router === undefined) {
+    throw new warn(
+      "The component you passed has no router to iterate through. Skipping."
+    );
+  }
   //generate xml file string.
   //write sitemap.xml file to build path.
 };
@@ -36,5 +41,17 @@ buildSitemap.propTypes = {
   buildPath: PropTypes.string,
   url: PropTypes.url,
 };
+
+import React from "react";
+
+export default function BasicRouter() {
+  return (
+    <Router>
+      <Route exact path="/" component={Home} />
+    </Router>
+  );
+}
+
+buildSitemap(BasicRouter, "./src/", "https://coreylanier.com");
 
 export default buildSitemap;
