@@ -2,6 +2,7 @@ import babelParser from "@babel/parser";
 import fs from "fs";
 import PropTypes from "prop-types";
 import { warn } from "console";
+import mapJson from "./src/mapJson";
 
 const buildSitemap = (fileName, buildPath) => {
   //open component
@@ -15,13 +16,7 @@ const buildSitemap = (fileName, buildPath) => {
     plugins: ["jsx"],
   });
   //find the 'router', 'browserrouter', or 'switch' element.
-  const routerIndex = jsxTree.findIndex(
-    (x) =>
-      x.name.name === "Router" ||
-      x.name.name === "BrowserRouter" ||
-      x.name.name === "Switch"
-  );
-  // TODO: work on logic for finding router nested in elements.
+  const router = mapJson(jsxTree);
   //if the above elements exist, map through all routes.
   //if does not exist, throw a warning saying it doesn't exist and skip running.
   //generate xml file string.
