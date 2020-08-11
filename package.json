@@ -1,0 +1,26 @@
+{
+  "name": "react-build-sitemap",
+  "version": "0.1.0",
+  "description": "simple library that generates a sitemap from your react router",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lanierc/react-build-sitemap.git"
+  },
+  "keywords": [
+    "react",
+    "react-router",
+    "sitemap",
+    "build",
+    "generate"
+  ],
+  "author": "Corey Lanier",
+  "license": "GPL-3.0-or-later",
+  "bugs": {
+    "url": "https://github.com/lanierc/react-build-sitemap/issues"
+  },
+  "homepage": "https://github.com/lanierc/react-build-sitemap#readme"
+}
