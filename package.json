@@ -5,7 +5,7 @@
   "main": "./index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node index.js"
+    "start": "babel-node index.js"
   },
   "repository": {
     "type": "git",
@@ -40,7 +40,10 @@
     "@babel/node": "^7.10.5",
     "@babel/parser": "^7.11.3",
     "@babel/plugin-syntax-jsx": "^7.10.4",
+    "@babel/preset-react": "^7.10.4",
+    "babel-plugin-jsx": "^1.2.0",
     "babel-plugin-transform-react-jsx": "^6.24.1",
+    "babel-preset-react": "^6.24.1",
     "jsx": "^0.9.89"
   }
 }

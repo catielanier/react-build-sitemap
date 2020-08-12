@@ -2,8 +2,9 @@ import babelParser from "@babel/parser";
 import fs from "fs";
 import PropTypes from "prop-types";
 import { warn } from "console";
-import jsx from "jsx";
+
 const buildSitemap = (fileName, buildPath, url) => {
+  const jsxFile = fs.readFileSync(fileName, "utf8");
   const sitemapElements = [
     '<?xml version="1.0" encoding="UTF-8?">',
     '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
@@ -14,22 +15,55 @@ const buildSitemap = (fileName, buildPath, url) => {
   }
   // read through jsx
   const jsxTree = JSON.stringify(
-    babelParser.parse(`${fileName}`, {
+    babelParser.parse(jsxFile, {
       sourceType: "unambiguous",
       plugins: ["jsx"],
     })
   );
+  const jsxObj = JSON.parse(jsxTree);
+  let functionIndex = -1;
+  jsxObj.program.body.forEach((item, index) => {
+    if (item.declaration !== undefined) {
+      if (item.declaration.type === "FunctionDeclaration") {
+        functionIndex = index;
+      }
+    }
+  });
+  if (functionIndex === -1) {
+    throw new warn(
+      "There is no function declaration in this file: Perhaps it is not a React Component? Skipping."
+    );
+  }
+  const returnIndex = jsxObj.program.body[
+    functionIndex
+  ].declaration.body.body.findIndex((x) => x.type === "ReturnStatement");
+  console.log(returnIndex);
+  console.log(
+    jsxObj.program.body[functionIndex].declaration.body.body[returnIndex]
+      .argument
+  );
+  if (returnIndex === -1) {
+    throw new warn(
+      "There is no return statement in this file: Have you written any JSX? Skipping."
+    );
+  }
+  const renderJson = [
+    jsxObj.program.body[functionIndex].declaration.body.body[returnIndex]
+      .argument,
+  ];
+  //console.log("should be json", jsxObj.program.body[2].declaration);
   // find the 'router', 'browserrouter', or 'switch' element.
   const mapJson = (json) => {
-    json.map((item) => {
+    json.forEach((item) => {
       //check for router in the item name.
+      console.log(item.openingElement.name.name);
       if (
-        item.name.name === "Router" ||
-        item.name.name === "BrowserRouter" ||
-        item.name.name === "Switch"
+        item.openingElement.name.name === "Router" ||
+        item.openingElement.name.name === "BrowserRouter" ||
+        item.openingElement.name.name === "Switch"
       ) {
         //if it exsits, return it.
-        return item;
+        router = item;
       }
       //if it doesn't, check for children
       if (item.children && item.children.length > 0) {
@@ -38,7 +72,10 @@ const buildSitemap = (fileName, buildPath, url) => {
       }
     });
   };
-  const router = mapJson(jsxTree);
+  let router;
+  mapJson(renderJson);
+
+  console.log(router);
   // if the above elements exist, map through all routes.
   if (router !== undefined) {
     router.forEach((item) => {
