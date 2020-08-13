@@ -54,7 +54,10 @@ const buildSitemap = (fileName, buildPath, url) => {
   let functionObj;
   let classObj;
   jsxObj.program.body.forEach((item) => {
-    if (item.declaration.type === "FunctionDeclaration") {
+    if (
+      item.declaration.type === "FunctionDeclaration" ||
+      item.type === "FunctionDeclaration"
+    ) {
       functionObj = item;
     }
     if (
@@ -64,6 +67,7 @@ const buildSitemap = (fileName, buildPath, url) => {
       classObj = item;
     }
   });
+  console.log(functionObj);
   if (functionObj === undefined && classObj === undefined) {
     throw new warn(
       "There is no function declaration in this file: Perhaps it is not a React Component? Skipping."
@@ -98,11 +102,20 @@ const buildSitemap = (fileName, buildPath, url) => {
   let returnObj;
   let renderJson;
   if (functionObj !== undefined) {
-    functionObj.declaration.body.body.forEach((item) => {
-      if (item.type === "ReturnStatement") {
-        returnObj = item.argument;
-      }
-    });
+    if (functionObj.declaration.type === "FunctionDeclaration") {
+      functionObj.declaration.body.body.forEach((item) => {
+        if (item.type === "ReturnStatement") {
+          returnObj = item.argument;
+        }
+      });
+    }
+    if (functionObj.type === "FunctionDeclaration") {
+      functionObj.body.body.forEach((item) => {
+        if (item.type === "ReturnStatement") {
+          returnObj = item.argument;
+        }
+      });
+    }
   }
   if (classObj !== undefined) {
     let renderIndex;
@@ -178,7 +191,7 @@ buildSitemap.propTypes = {
   url: PropTypes.url,
 };
 
-//buildSitemap("./src/BasicRouter.jsx", "./src", "https://icloudhospital.com");
-buildSitemap("./src/ClassRouter.jsx", "./src", "https://icloudhospital.com");
+buildSitemap("./src/BasicRouter.jsx", "./src", "https://icloudhospital.com");
+//buildSitemap("./src/ClassRouter.jsx", "./src", "https://icloudhospital.com");
 
 export default buildSitemap;
