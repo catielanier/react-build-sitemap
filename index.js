@@ -3,14 +3,7 @@ import fs from "fs";
 import PropTypes from "prop-types";
 import { warn } from "console";
 
-// TODO: Test case #1: Sitemap generates more than one route. ✔️
-// TODO: Test case #2: Router is nested inside of another element. ✔️
-// TODO: Test case #3: Component has declarations in it before the return. ✔️
-// TODO: Test case #4: Component is class-based. ✔️
-// TODO: Test case #5: File has multiple components.
 // TODO: Test case #6: File is a typescript file.
-// TODO: Test case #7: export default is on the same line as the function declaration ✔️
-// TODO: Test case #8: Class is not default exported on the same line as the declaration. ✔️
 const buildSitemap = (fileName, buildPath, url) => {
   // check for file type (typescript/javascript)
   const typescriptCheck = /\.(tsx|ts)$/;
@@ -27,6 +20,10 @@ const buildSitemap = (fileName, buildPath, url) => {
       "The passed file is neither Javascript nor Typescript. Skipping."
     );
   }
+  const plugins = ["jsx", "classProperties"];
+  if (fileType === "tsx") {
+    plugins.push("typescript");
+  }
   const jsxFile = fs.readFileSync(fileName, "utf8");
   const sitemapElements = [
     '<?xml version="1.0" encoding="UTF-8?">',
@@ -40,7 +37,7 @@ const buildSitemap = (fileName, buildPath, url) => {
   const jsxTree = JSON.stringify(
     babelParser.parse(jsxFile, {
       sourceType: "unambiguous",
-      plugins: [fileType, "classProperties"],
+      plugins,
     })
   );
   const jsxObj = JSON.parse(jsxTree);
@@ -196,7 +193,8 @@ buildSitemap.propTypes = {
   url: PropTypes.url,
 };
 
-buildSitemap("./src/BasicRouter.jsx", "./src", "https://icloudhospital.com");
+//buildSitemap("./src/BasicRouter.jsx", "./src", "https://icloudhospital.com");
 //buildSitemap("./src/ClassRouter.jsx", "./src", "https://icloudhospital.com");
+buildSitemap("./src/BasicRouter.tsx", "./src", "https://icloudhospital.com");
 
 export default buildSitemap;
