@@ -4,6 +4,21 @@ import PropTypes from "prop-types";
 import { warn } from "console";
 
 const buildSitemap = (fileName, buildPath, url) => {
+  // check for file type (typescript/javascript)
+  const typescriptCheck = /\.(tsx|ts)$/;
+  const javascriptCheck = /\.(jsx|js)$/;
+  let fileType;
+  if (typescriptCheck.exec(fileName)) {
+    fileType = "tsx";
+  }
+  if (javascriptCheck.exec(fileName)) {
+    fileType = "jsx";
+  }
+  if (!fileType) {
+    throw new warn(
+      "The passed file is neither Javascript nor Typescript. Skipping."
+    );
+  }
   const jsxFile = fs.readFileSync(fileName, "utf8");
   const sitemapElements = [
     '<?xml version="1.0" encoding="UTF-8?">',
@@ -17,7 +32,7 @@ const buildSitemap = (fileName, buildPath, url) => {
   const jsxTree = JSON.stringify(
     babelParser.parse(jsxFile, {
       sourceType: "unambiguous",
-      plugins: ["jsx"],
+      plugins: [fileType],
     })
   );
   const jsxObj = JSON.parse(jsxTree);
@@ -40,7 +55,7 @@ const buildSitemap = (fileName, buildPath, url) => {
   console.log(returnIndex);
   console.log(
     jsxObj.program.body[functionIndex].declaration.body.body[returnIndex]
-      .argument
+      .argument.openingElement.name.name
   );
   if (returnIndex === -1) {
     throw new warn(
@@ -51,22 +66,20 @@ const buildSitemap = (fileName, buildPath, url) => {
     jsxObj.program.body[functionIndex].declaration.body.body[returnIndex]
       .argument,
   ];
-  //console.log("should be json", jsxObj.program.body[2].declaration);
   // find the 'router', 'browserrouter', or 'switch' element.
   const mapJson = (json) => {
     json.forEach((item) => {
       //check for router in the item name.
-      console.log(item.openingElement.name.name);
       if (
         item.openingElement.name.name === "Router" ||
         item.openingElement.name.name === "BrowserRouter" ||
         item.openingElement.name.name === "Switch"
       ) {
         //if it exsits, return it.
-        router = item;
+        router = item.children;
       }
       //if it doesn't, check for children
-      if (item.children && item.children.length > 0) {
+      if (router === undefined && item.children && item.children.length > 0) {
         //if it has children, rerun the function on the children
         mapJson(item.children);
       }
