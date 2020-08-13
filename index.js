@@ -3,6 +3,14 @@ import fs from "fs";
 import PropTypes from "prop-types";
 import { warn } from "console";
 
+// TODO: Test case #1: Sitemap generates more than one route. ✔️
+// TODO: Test case #2: Router is nested inside of another element. ✔️
+// TODO: Test case #3: Component has declarations in it before the return. ✔️
+// TODO: Test case #4: Component is class-based.
+// TODO: Test case #5: File has multiple components.
+// TODO: Test case #6: File is a typescript file.
+// TODO: Test case #7: export default is on the same line as the function declaration
+// TODO: Test case #8: Class is not default exported on the same line as the declaration.
 const buildSitemap = (fileName, buildPath, url) => {
   // check for file type (typescript/javascript)
   const typescriptCheck = /\.(tsx|ts)$/;
@@ -32,11 +40,10 @@ const buildSitemap = (fileName, buildPath, url) => {
   const jsxTree = JSON.stringify(
     babelParser.parse(jsxFile, {
       sourceType: "unambiguous",
-      plugins: [fileType],
+      plugins: [fileType, "classProperties"],
     })
   );
   const jsxObj = JSON.parse(jsxTree);
-  let functionIndex = -1;
   jsxObj.program.body.forEach((item) => {
     if (item.declaration === undefined) {
       item.declaration = {
@@ -44,10 +51,15 @@ const buildSitemap = (fileName, buildPath, url) => {
       };
     }
   });
+  console.log(jsxObj.program.body[2].declaration.body.body[1]);
   let functionObj;
+  let classObj;
   jsxObj.program.body.forEach((item) => {
     if (item.declaration.type === "FunctionDeclaration") {
       functionObj = item;
+    }
+    if (item.declaration.type === "ClassDeclaration") {
+      classObject = item;
     }
   });
   jsxObj.program.body.forEach((item, index) => {
@@ -57,24 +69,11 @@ const buildSitemap = (fileName, buildPath, url) => {
       }
     }
   });
-  if (functionObj === undefined) {
+  if (functionObj === undefined && classObj === undefined) {
     throw new warn(
       "There is no function declaration in this file: Perhaps it is not a React Component? Skipping."
     );
   }
-  let returnObj;
-  functionObj.declaration.body.body.forEach((item) => {
-    if (item.type === "ReturnStatement") {
-      returnObj = item.argument;
-    }
-  });
-  console.log(returnObj);
-  if (returnObj === undefined) {
-    throw new warn(
-      "There is no return statement in this file: Have you written any JSX? Skipping."
-    );
-  }
-  const renderJson = [returnObj];
   // find the 'router', 'browserrouter', or 'switch' element.
   const mapJson = (json) => {
     json.forEach((item) => {
@@ -101,6 +100,24 @@ const buildSitemap = (fileName, buildPath, url) => {
     });
   };
   let router;
+  let renderJson;
+  if (functionObj !== undefined) {
+    let returnObj;
+    functionObj.declaration.body.body.forEach((item) => {
+      if (item.type === "ReturnStatement") {
+        returnObj = item.argument;
+      }
+    });
+    if (returnObj === undefined) {
+      throw new warn(
+        "There is no return statement in this file: Have you written any JSX? Skipping."
+      );
+    }
+    renderJson = [returnObj];
+  }
+  if (classObj !== undefined) {
+    console.log(classObj);
+  }
   mapJson(renderJson);
 
   // if the above elements exist, map through all routes.
@@ -142,6 +159,6 @@ buildSitemap.propTypes = {
   url: PropTypes.url,
 };
 
-buildSitemap("./src/BasicRouter.jsx", "./src", "https://icloudhospital.com");
+buildSitemap("./src/ClassRouter.jsx", "./src", "https://icloudhospital.com");
 
 export default buildSitemap;
