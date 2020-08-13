@@ -14,7 +14,7 @@ const buildSitemap = (fileName, buildPath, url) => {
   if (javascriptCheck.exec(fileName)) {
     fileType = "jsx";
   }
-  if (!fileType) {
+  if (fileType === undefined) {
     throw new warn(
       "The passed file is neither Javascript nor Typescript. Skipping."
     );
@@ -52,11 +52,6 @@ const buildSitemap = (fileName, buildPath, url) => {
   const returnIndex = jsxObj.program.body[
     functionIndex
   ].declaration.body.body.findIndex((x) => x.type === "ReturnStatement");
-  console.log(returnIndex);
-  console.log(
-    jsxObj.program.body[functionIndex].declaration.body.body[returnIndex]
-      .argument.openingElement.name.name
-  );
   if (returnIndex === -1) {
     throw new warn(
       "There is no return statement in this file: Have you written any JSX? Skipping."
@@ -71,9 +66,10 @@ const buildSitemap = (fileName, buildPath, url) => {
     json.forEach((item) => {
       //check for router in the item name.
       if (
-        item.openingElement.name.name === "Router" ||
-        item.openingElement.name.name === "BrowserRouter" ||
-        item.openingElement.name.name === "Switch"
+        item.openingElement.name.name !== undefined &&
+        (item.openingElement.name.name === "Router" ||
+          item.openingElement.name.name === "BrowserRouter" ||
+          item.openingElement.name.name === "Switch")
       ) {
         //if it exsits, filter it for only elements that are routes and return it.
         router = item.children.filter(
@@ -92,11 +88,16 @@ const buildSitemap = (fileName, buildPath, url) => {
   let router;
   mapJson(renderJson);
 
-  console.log(router);
   // if the above elements exist, map through all routes.
   if (router !== undefined) {
     router.forEach((item) => {
-      console.log(item);
+      const pathIndex = item.openingElement.attributes.findIndex(
+        (x) => x.name.name === "path"
+      );
+      const newUrl = `<url>
+      <loc>${url}${item.openingElement.attributes[pathIndex].value.value}</loc>
+      </url>`;
+      sitemapElements.push(newUrl);
     });
   }
   // if does not exist, throw a warning saying it doesn't exist and skip running.
@@ -118,6 +119,6 @@ buildSitemap.propTypes = {
   url: PropTypes.url,
 };
 
-buildSitemap("./src/BasicRouter.jsx", "./src/", "https://coreylanier.com");
+buildSitemap("./src/BasicRouter.jsx", "./src/", "https://icloudhospital.com");
 
 export default buildSitemap;
