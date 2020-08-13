@@ -7,9 +7,9 @@ import { warn } from "console";
 // TODO: Test case #2: Router is nested inside of another element. ✔️
 // TODO: Test case #3: Component has declarations in it before the return. ✔️
 // TODO: Test case #4: Component is class-based. ✔️
-// TODO: Test case #5: File has multiple components. ✔️
+// TODO: Test case #5: File has multiple components.
 // TODO: Test case #6: File is a typescript file.
-// TODO: Test case #7: export default is on the same line as the function declaration
+// TODO: Test case #7: export default is on the same line as the function declaration ✔️
 // TODO: Test case #8: Class is not default exported on the same line as the declaration. ✔️
 const buildSitemap = (fileName, buildPath, url) => {
   // check for file type (typescript/javascript)
@@ -51,24 +51,23 @@ const buildSitemap = (fileName, buildPath, url) => {
       };
     }
   });
-  let functionObj;
-  let classObj;
+  const functionObj = [];
+  const classObj = [];
   jsxObj.program.body.forEach((item) => {
     if (
       item.declaration.type === "FunctionDeclaration" ||
       item.type === "FunctionDeclaration"
     ) {
-      functionObj = item;
+      functionObj.push(item);
     }
     if (
       item.declaration.type === "ClassDeclaration" ||
       item.type === "ClassDeclaration"
     ) {
-      classObj = item;
+      classObj.push(item);
     }
   });
-  console.log(functionObj);
-  if (functionObj === undefined && classObj === undefined) {
+  if (functionObj.length === 0 && classObj.length === 0) {
     throw new warn(
       "There is no function declaration in this file: Perhaps it is not a React Component? Skipping."
     );
@@ -99,57 +98,63 @@ const buildSitemap = (fileName, buildPath, url) => {
     });
   };
   let router;
-  let returnObj;
-  let renderJson;
-  if (functionObj !== undefined) {
-    if (functionObj.declaration.type === "FunctionDeclaration") {
-      functionObj.declaration.body.body.forEach((item) => {
-        if (item.type === "ReturnStatement") {
-          returnObj = item.argument;
-        }
-      });
-    }
-    if (functionObj.type === "FunctionDeclaration") {
-      functionObj.body.body.forEach((item) => {
-        if (item.type === "ReturnStatement") {
-          returnObj = item.argument;
-        }
-      });
-    }
+  const renderJson = [];
+  if (functionObj.length > 0) {
+    functionObj.forEach((obj) => {
+      if (obj.declaration.type === "FunctionDeclaration") {
+        obj.declaration.body.body.forEach((item) => {
+          if (item.type === "ReturnStatement") {
+            renderJson.push(item.argument);
+          }
+        });
+      }
+      if (obj.type === "FunctionDeclaration") {
+        obj.body.body.forEach((item) => {
+          if (item.type === "ReturnStatement") {
+            renderJson.push(item.argument);
+          }
+        });
+      }
+    });
   }
-  if (classObj !== undefined) {
-    let renderIndex;
-    if (classObj.declaration.type === "ClassDeclaration") {
-      classObj.declaration.body.body.forEach((item, index) => {
-        if (item.key.name === "render") {
-          renderIndex = index;
+  if (classObj.length > 0) {
+    classObj.forEach((obj) => {
+      let renderIndex;
+      if (obj.declaration.type === "ClassDeclaration") {
+        obj.declaration.body.body.forEach((item, index) => {
+          if (item.key.name === "render") {
+            renderIndex = index;
+          }
+        });
+        if (renderIndex !== undefined) {
+          obj.declaration.body.body[renderIndex].body.body.forEach((item) => {
+            if (item.type === "ReturnStatement") {
+              returnObj.push(item.argument);
+            }
+          });
         }
-      });
-      classObj.declaration.body.body[renderIndex].body.body.forEach((item) => {
-        if (item.type === "ReturnStatement") {
-          returnObj = item.argument;
+      }
+      if (obj.type === "ClassDeclaration") {
+        obj.body.body.forEach((item, index) => {
+          if (item.key.name === "render") {
+            renderIndex = index;
+          }
+        });
+        if (renderIndex !== undefined) {
+          obj.body.body[renderIndex].body.body.forEach((item) => {
+            if (item.type === "ReturnStatement") {
+              returnObj.push(item.argument);
+            }
+          });
         }
-      });
-    }
-    if (classObj.type === "ClassDeclaration") {
-      classObj.body.body.forEach((item, index) => {
-        if (item.key.name === "render") {
-          renderIndex = index;
-        }
-      });
-      classObj.body.body[renderIndex].body.body.forEach((item) => {
-        if (item.type === "ReturnStatement") {
-          returnObj = item.argument;
-        }
-      });
-    }
+      }
+    });
   }
-  if (returnObj === undefined) {
+  if (renderJson.length === 0) {
     throw new warn(
       "There is no return statement in this file: Have you written any JSX? Skipping."
     );
   }
-  renderJson = [returnObj];
   mapJson(renderJson);
 
   // if the above elements exist, map through all routes.
