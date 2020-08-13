@@ -51,7 +51,6 @@ const buildSitemap = (fileName, buildPath, url) => {
       };
     }
   });
-  console.log(jsxObj.program.body[2].declaration.body.body[1]);
   let functionObj;
   let classObj;
   jsxObj.program.body.forEach((item) => {
@@ -59,7 +58,7 @@ const buildSitemap = (fileName, buildPath, url) => {
       functionObj = item;
     }
     if (item.declaration.type === "ClassDeclaration") {
-      classObject = item;
+      classObj = item;
     }
   });
   jsxObj.program.body.forEach((item, index) => {
@@ -100,24 +99,34 @@ const buildSitemap = (fileName, buildPath, url) => {
     });
   };
   let router;
+  let returnObj;
   let renderJson;
   if (functionObj !== undefined) {
-    let returnObj;
     functionObj.declaration.body.body.forEach((item) => {
       if (item.type === "ReturnStatement") {
         returnObj = item.argument;
       }
     });
-    if (returnObj === undefined) {
-      throw new warn(
-        "There is no return statement in this file: Have you written any JSX? Skipping."
-      );
-    }
-    renderJson = [returnObj];
   }
   if (classObj !== undefined) {
-    console.log(classObj);
+    let renderIndex;
+    classObj.declaration.body.body.forEach((item, index) => {
+      if (item.key.name === "render") {
+        renderIndex = index;
+      }
+    });
+    classObj.declaration.body.body[renderIndex].body.body.forEach((item) => {
+      if (item.type === "ReturnStatement") {
+        returnObj = item.argument;
+      }
+    });
   }
+  if (returnObj === undefined) {
+    throw new warn(
+      "There is no return statement in this file: Have you written any JSX? Skipping."
+    );
+  }
+  renderJson = [returnObj];
   mapJson(renderJson);
 
   // if the above elements exist, map through all routes.
