@@ -6,11 +6,11 @@ import { warn } from "console";
 // TODO: Test case #1: Sitemap generates more than one route. ✔️
 // TODO: Test case #2: Router is nested inside of another element. ✔️
 // TODO: Test case #3: Component has declarations in it before the return. ✔️
-// TODO: Test case #4: Component is class-based.
-// TODO: Test case #5: File has multiple components.
+// TODO: Test case #4: Component is class-based. ✔️
+// TODO: Test case #5: File has multiple components. ✔️
 // TODO: Test case #6: File is a typescript file.
 // TODO: Test case #7: export default is on the same line as the function declaration
-// TODO: Test case #8: Class is not default exported on the same line as the declaration.
+// TODO: Test case #8: Class is not default exported on the same line as the declaration. ✔️
 const buildSitemap = (fileName, buildPath, url) => {
   // check for file type (typescript/javascript)
   const typescriptCheck = /\.(tsx|ts)$/;
@@ -57,15 +57,11 @@ const buildSitemap = (fileName, buildPath, url) => {
     if (item.declaration.type === "FunctionDeclaration") {
       functionObj = item;
     }
-    if (item.declaration.type === "ClassDeclaration") {
+    if (
+      item.declaration.type === "ClassDeclaration" ||
+      item.type === "ClassDeclaration"
+    ) {
       classObj = item;
-    }
-  });
-  jsxObj.program.body.forEach((item, index) => {
-    if (item.declaration !== undefined) {
-      if (item.declaration.type === "FunctionDeclaration") {
-        functionIndex = index;
-      }
     }
   });
   if (functionObj === undefined && classObj === undefined) {
@@ -92,7 +88,7 @@ const buildSitemap = (fileName, buildPath, url) => {
       }
       //if it doesn't, check for children
       if (router === undefined && item.children && item.children.length > 0) {
-        //if it has children, rerun the function on the children
+        //if it has children, rerun the function on the children that are actually elements
         const children = item.children.filter((x) => x.type === "JSXElement");
         mapJson(children);
       }
@@ -110,16 +106,30 @@ const buildSitemap = (fileName, buildPath, url) => {
   }
   if (classObj !== undefined) {
     let renderIndex;
-    classObj.declaration.body.body.forEach((item, index) => {
-      if (item.key.name === "render") {
-        renderIndex = index;
-      }
-    });
-    classObj.declaration.body.body[renderIndex].body.body.forEach((item) => {
-      if (item.type === "ReturnStatement") {
-        returnObj = item.argument;
-      }
-    });
+    if (classObj.declaration.type === "ClassDeclaration") {
+      classObj.declaration.body.body.forEach((item, index) => {
+        if (item.key.name === "render") {
+          renderIndex = index;
+        }
+      });
+      classObj.declaration.body.body[renderIndex].body.body.forEach((item) => {
+        if (item.type === "ReturnStatement") {
+          returnObj = item.argument;
+        }
+      });
+    }
+    if (classObj.type === "ClassDeclaration") {
+      classObj.body.body.forEach((item, index) => {
+        if (item.key.name === "render") {
+          renderIndex = index;
+        }
+      });
+      classObj.body.body[renderIndex].body.body.forEach((item) => {
+        if (item.type === "ReturnStatement") {
+          returnObj = item.argument;
+        }
+      });
+    }
   }
   if (returnObj === undefined) {
     throw new warn(
@@ -168,6 +178,7 @@ buildSitemap.propTypes = {
   url: PropTypes.url,
 };
 
+//buildSitemap("./src/BasicRouter.jsx", "./src", "https://icloudhospital.com");
 buildSitemap("./src/ClassRouter.jsx", "./src", "https://icloudhospital.com");
 
 export default buildSitemap;
