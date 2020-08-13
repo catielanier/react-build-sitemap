@@ -34,7 +34,6 @@
     "react": "^16.13.1",
     "react-router": "^5.2.0"
   },
-  "type": "module",
   "devDependencies": {
     "@babel/core": "^7.11.1",
     "@babel/node": "^7.10.5",
