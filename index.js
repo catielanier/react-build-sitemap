@@ -75,8 +75,12 @@ const buildSitemap = (fileName, buildPath, url) => {
         item.openingElement.name.name === "BrowserRouter" ||
         item.openingElement.name.name === "Switch"
       ) {
-        //if it exsits, return it.
-        router = item.children;
+        //if it exsits, filter it for only elements that are routes and return it.
+        router = item.children.filter(
+          (child) =>
+            child.type === "JSXElement" &&
+            child.openingElement.name.name === "Route"
+        );
       }
       //if it doesn't, check for children
       if (router === undefined && item.children && item.children.length > 0) {
