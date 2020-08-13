@@ -3,7 +3,6 @@ import fs from "fs";
 import PropTypes from "prop-types";
 import { warn } from "console";
 
-// TODO: Test case #6: File is a typescript file.
 const buildSitemap = (fileName, buildPath, url) => {
   // check for file type (typescript/javascript)
   const typescriptCheck = /\.(tsx|ts)$/;
