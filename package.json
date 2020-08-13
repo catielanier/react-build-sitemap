@@ -1,6 +1,6 @@
 {
   "name": "react-build-sitemap",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "simple library that generates a sitemap from your react router",
   "main": "./index.js",
   "scripts": {
@@ -18,7 +18,7 @@
     "build",
     "generate"
   ],
-  "author": "Corey Lanier",
+  "author": "Corey Lanier <corey@icloudhospital.com>",
   "license": "GPL-3.0-or-later",
   "bugs": {
     "url": "https://github.com/lanierc/react-build-sitemap/issues"

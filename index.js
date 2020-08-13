@@ -192,8 +192,4 @@ buildSitemap.propTypes = {
   url: PropTypes.url,
 };
 
-//buildSitemap("./src/BasicRouter.jsx", "./src", "https://icloudhospital.com");
-//buildSitemap("./src/ClassRouter.jsx", "./src", "https://icloudhospital.com");
-buildSitemap("./src/BasicRouter.tsx", "./src", "https://icloudhospital.com");
-
 export default buildSitemap;
