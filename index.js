@@ -37,6 +37,19 @@ const buildSitemap = (fileName, buildPath, url) => {
   );
   const jsxObj = JSON.parse(jsxTree);
   let functionIndex = -1;
+  jsxObj.program.body.forEach((item) => {
+    if (item.declaration === undefined) {
+      item.declaration = {
+        type: "",
+      };
+    }
+  });
+  let functionObj;
+  jsxObj.program.body.forEach((item) => {
+    if (item.declaration.type === "FunctionDeclaration") {
+      functionObj = item;
+    }
+  });
   jsxObj.program.body.forEach((item, index) => {
     if (item.declaration !== undefined) {
       if (item.declaration.type === "FunctionDeclaration") {
@@ -44,23 +57,24 @@ const buildSitemap = (fileName, buildPath, url) => {
       }
     }
   });
-  if (functionIndex === -1) {
+  if (functionObj === undefined) {
     throw new warn(
       "There is no function declaration in this file: Perhaps it is not a React Component? Skipping."
     );
   }
-  const returnIndex = jsxObj.program.body[
-    functionIndex
-  ].declaration.body.body.findIndex((x) => x.type === "ReturnStatement");
-  if (returnIndex === -1) {
+  let returnObj;
+  functionObj.declaration.body.body.forEach((item) => {
+    if (item.type === "ReturnStatement") {
+      returnObj = item.argument;
+    }
+  });
+  console.log(returnObj);
+  if (returnObj === undefined) {
     throw new warn(
       "There is no return statement in this file: Have you written any JSX? Skipping."
     );
   }
-  const renderJson = [
-    jsxObj.program.body[functionIndex].declaration.body.body[returnIndex]
-      .argument,
-  ];
+  const renderJson = [returnObj];
   // find the 'router', 'browserrouter', or 'switch' element.
   const mapJson = (json) => {
     json.forEach((item) => {
@@ -81,7 +95,8 @@ const buildSitemap = (fileName, buildPath, url) => {
       //if it doesn't, check for children
       if (router === undefined && item.children && item.children.length > 0) {
         //if it has children, rerun the function on the children
-        mapJson(item.children);
+        const children = item.children.filter((x) => x.type === "JSXElement");
+        mapJson(children);
       }
     });
   };
