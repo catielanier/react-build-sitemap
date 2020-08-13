@@ -110,7 +110,15 @@ const buildSitemap = (fileName, buildPath, url) => {
   sitemapElements.push("</urlset>");
   const xml = sitemapElements.join("");
   // write sitemap.xml file to build path.
-  fs.writeFile(`${buildPath}/sitemap.xml`, xml);
+  fs.writeFile(`${buildPath}/sitemap.xml`, xml, (err) => {
+    if (err) {
+      console.error(`Error ❌: (react-build-sitemap) ${err}`);
+    } else {
+      console.log(
+        `> ✔️ Sitemap successfully generated at ${buildPath}/sitemap.xml`
+      );
+    }
+  });
 };
 
 buildSitemap.propTypes = {
@@ -119,6 +127,6 @@ buildSitemap.propTypes = {
   url: PropTypes.url,
 };
 
-buildSitemap("./src/BasicRouter.jsx", "./src/", "https://icloudhospital.com");
+buildSitemap("./src/BasicRouter.jsx", "./src", "https://icloudhospital.com");
 
 export default buildSitemap;
