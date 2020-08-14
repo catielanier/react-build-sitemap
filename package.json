@@ -1,6 +1,7 @@
 {
   "name": "react-build-sitemap",
-  "version": "0.1.5",
+  "version": "0.2.0",
+  "type": "module",
   "description": "simple library that generates a sitemap from your react router",
   "main": "./index.js",
   "scripts": {
@@ -25,24 +26,22 @@
   },
   "homepage": "https://github.com/lanierc/react-build-sitemap#readme",
   "dependencies": {
+    "@babel/core": "^7.11.1",
+    "@babel/node": "^7.10.5",
+    "@babel/plugin-syntax-jsx": "^7.10.4",
+    "@babel/preset-react": "^7.10.4",
+    "babel-plugin-jsx": "^1.2.0",
+    "babel-plugin-transform-es2015-modules-commonjs": "^6.26.2",
+    "babel-plugin-transform-react-jsx": "^6.24.1",
+    "babel-preset-react": "^6.24.1",
+    "console": "^0.7.2",
     "fs": "0.0.1-security",
+    "jsx": "^0.9.89",
     "prop-types": "^15.7.2",
     "react": "^16.13.1",
     "react-router": "^5.2.0"
   },
-  "peerDependencies": {
-    "react": "^16.13.1",
-    "react-router": "^5.2.0"
-  },
   "devDependencies": {
-    "@babel/core": "^7.11.1",
-    "@babel/node": "^7.10.5",
-    "@babel/parser": "^7.11.3",
-    "@babel/plugin-syntax-jsx": "^7.10.4",
-    "@babel/preset-react": "^7.10.4",
-    "babel-plugin-jsx": "^1.2.0",
-    "babel-plugin-transform-react-jsx": "^6.24.1",
-    "babel-preset-react": "^6.24.1",
-    "jsx": "^0.9.89"
+    "@babel/parser": "^7.11.3"
   }
 }

@@ -1,4 +1,4 @@
 {
   "presets": ['@babel/react'],
-  "plugins": ['jsx']
+  "plugins": ['jsx', 'transform-es2015-modules-commonjs']
 }

@@ -1,7 +1,7 @@
-import babelParser from "@babel/parser";
+const babelParser = require("@babel/parser");
+//import babelParser from "@babel/parser";
 import fs from "fs";
 import PropTypes from "prop-types";
-import { warn } from "console";
 
 const buildSitemap = (fileName, buildPath, url) => {
   // check for file type (typescript/javascript)
@@ -15,7 +15,7 @@ const buildSitemap = (fileName, buildPath, url) => {
     fileType = "jsx";
   }
   if (fileType === undefined) {
-    throw new warn(
+    throw new Error(
       "The passed file is neither Javascript nor Typescript. Skipping."
     );
   }
@@ -28,9 +28,9 @@ const buildSitemap = (fileName, buildPath, url) => {
     '<?xml version="1.0" encoding="UTF-8?">',
     '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
   ];
-  // if component does not exist, throw warning and skip.
+  // if component does not exist, throw error and skip.
   if (fileName === undefined || fileName === null) {
-    throw new warn("Component does not exist to generate sitemap. Skipping.");
+    throw new Error("Component does not exist to generate sitemap. Skipping.");
   }
   // read through jsx
   const jsxTree = JSON.stringify(
@@ -62,33 +62,48 @@ const buildSitemap = (fileName, buildPath, url) => {
     ) {
       classObj.push(item);
     }
+    if (
+      item.type === "VariableDeclaration" &&
+      item.declarations[0].init.type === "ArrowFunctionExpression"
+    ) {
+      functionObj.push(item.declarations[0].init);
+    }
   });
   if (functionObj.length === 0 && classObj.length === 0) {
-    throw new warn(
+    throw new Error(
       "There is no function declaration in this file: Perhaps it is not a React Component? Skipping."
     );
   }
   // find the 'router', 'browserrouter', or 'switch' element.
   const mapJson = (json) => {
     json.forEach((item) => {
-      //check for router in the item name.
-      if (
-        item.openingElement.name.name !== undefined &&
-        (item.openingElement.name.name === "Router" ||
-          item.openingElement.name.name === "BrowserRouter" ||
-          item.openingElement.name.name === "Switch")
-      ) {
-        //if it exsits, filter it for only elements that are routes and return it.
-        router = item.children.filter(
-          (child) =>
-            child.type === "JSXElement" &&
-            child.openingElement.name.name === "Route"
+      if (item.type === "JSXFragment") {
+        const children = item.children.filter(
+          (x) => x.type === "JSX Element" || x.type === "JSXFragment"
         );
+        mapJson(children);
+      } else {
+        //check for router in the item name.
+        if (
+          item.openingElement.name.name !== undefined &&
+          (item.openingElement.name.name === "Router" ||
+            item.openingElement.name.name === "BrowserRouter" ||
+            item.openingElement.name.name === "Switch")
+        ) {
+          //if it exsits, filter it for only elements that are routes and return it.
+          router = item.children.filter(
+            (child) =>
+              child.type === "JSXElement" &&
+              child.openingElement.name.name === "Route"
+          );
+        }
       }
       //if it doesn't, check for children
       if (router === undefined && item.children && item.children.length > 0) {
         //if it has children, rerun the function on the children that are actually elements
-        const children = item.children.filter((x) => x.type === "JSXElement");
+        const children = item.children.filter(
+          (x) => x.type === "JSXElement" || x.type === "JSXFragment"
+        );
         mapJson(children);
       }
     });
@@ -97,6 +112,17 @@ const buildSitemap = (fileName, buildPath, url) => {
   const renderJson = [];
   if (functionObj.length > 0) {
     functionObj.forEach((obj) => {
+      if (obj.type === "ArrowFunctionExpression") {
+        if (obj.body.body === undefined) {
+          return;
+        }
+        obj.body.body.forEach((item) => {
+          if (item.type === "ReturnStatement") {
+            renderJson.push(item.argument);
+          }
+        });
+        return;
+      }
       if (obj.declaration.type === "FunctionDeclaration") {
         obj.declaration.body.body.forEach((item) => {
           if (item.type === "ReturnStatement") {
@@ -147,7 +173,7 @@ const buildSitemap = (fileName, buildPath, url) => {
     });
   }
   if (renderJson.length === 0) {
-    throw new warn(
+    throw new Error(
       "There is no return statement in this file: Have you written any JSX? Skipping."
     );
   }
@@ -165,9 +191,9 @@ const buildSitemap = (fileName, buildPath, url) => {
       sitemapElements.push(newUrl);
     });
   }
-  // if does not exist, throw a warning saying it doesn't exist and skip running.
+  // if does not exist, throw an error saying it doesn't exist and skip running.
   if (router === undefined) {
-    throw new warn(
+    throw new Error(
       "The component you passed has no router to iterate through. Skipping."
     );
   }
@@ -189,7 +215,7 @@ const buildSitemap = (fileName, buildPath, url) => {
 buildSitemap.propTypes = {
   fileName: PropTypes.string,
   buildPath: PropTypes.string,
-  url: PropTypes.url,
+  url: PropTypes.string,
 };
 
 export default buildSitemap;
