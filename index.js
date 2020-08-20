@@ -77,34 +77,70 @@ const buildSitemap = (fileName, buildPath, url) => {
   // find the 'router', 'browserrouter', or 'switch' element.
   const mapJson = (json) => {
     json.forEach((item) => {
-      if (item.type === "JSXFragment") {
-        const children = item.children.filter(
-          (x) => x.type === "JSX Element" || x.type === "JSXFragment"
-        );
-        mapJson(children);
-      } else {
-        //check for router in the item name.
-        if (
-          item.openingElement.name.name !== undefined &&
-          (item.openingElement.name.name === "Router" ||
-            item.openingElement.name.name === "BrowserRouter" ||
-            item.openingElement.name.name === "Switch")
-        ) {
-          //if it exsits, filter it for only elements that are routes and return it.
-          router = item.children.filter(
-            (child) =>
-              child.type === "JSXElement" &&
-              child.openingElement.name.name === "Route"
+      if (item.type === "ConditionalExpression") {
+        if (item.consequent.type === "JSXFragment") {
+          const children = item.consequent.children.filter(
+            (x) => x.type === "JSX Element" || x.type === "JSXFragment"
           );
+          mapJson(children);
+        } else {
+          //check for router in the item name.
+          if (
+            item.consequent.openingElement.name.name !== undefined &&
+            (item.consequent.openingElement.name.name === "Router" ||
+              item.consequent.openingElement.name.name === "BrowserRouter" ||
+              item.consequent.openingElement.name.name === "Switch")
+          ) {
+            //if it exsits, filter it for only elements that are routes and return it.
+            router = item.consequent.children.filter(
+              (child) =>
+                child.type === "JSXElement" &&
+                child.openingElement.name.name === "Route"
+            );
+          }
         }
-      }
-      //if it doesn't, check for children
-      if (router === undefined && item.children && item.children.length > 0) {
-        //if it has children, rerun the function on the children that are actually elements
-        const children = item.children.filter(
-          (x) => x.type === "JSXElement" || x.type === "JSXFragment"
-        );
-        mapJson(children);
+        //if it doesn't, check for children
+        if (
+          router === undefined &&
+          item.consequent.children &&
+          item.consequent.children.length > 0
+        ) {
+          //if it has children, rerun the function on the children that are actually elements
+          const children = item.consequent.children.filter(
+            (x) => x.type === "JSXElement" || x.type === "JSXFragment"
+          );
+          mapJson(children);
+        }
+      } else {
+        if (item.type === "JSXFragment") {
+          const children = item.children.filter(
+            (x) => x.type === "JSX Element" || x.type === "JSXFragment"
+          );
+          mapJson(children);
+        } else {
+          //check for router in the item name.
+          if (
+            item.openingElement.name.name !== undefined &&
+            (item.openingElement.name.name === "Router" ||
+              item.openingElement.name.name === "BrowserRouter" ||
+              item.openingElement.name.name === "Switch")
+          ) {
+            //if it exsits, filter it for only elements that are routes and return it.
+            router = item.children.filter(
+              (child) =>
+                child.type === "JSXElement" &&
+                child.openingElement.name.name === "Route"
+            );
+          }
+        }
+        //if it doesn't, check for children
+        if (router === undefined && item.children && item.children.length > 0) {
+          //if it has children, rerun the function on the children that are actually elements
+          const children = item.children.filter(
+            (x) => x.type === "JSXElement" || x.type === "JSXFragment"
+          );
+          mapJson(children);
+        }
       }
     });
   };
