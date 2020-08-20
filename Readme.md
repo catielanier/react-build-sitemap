@@ -28,6 +28,12 @@ NPM:
 npm install react-build-sitemap --save-dev
 ```
 
+Yarn:
+
+```
+yarn add react-build-sitemap --dev
+```
+
 ### Usage
 
 In whatever file you need to import this in, do the following:
