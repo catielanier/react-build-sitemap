@@ -1,7 +1,7 @@
 {
   "name": "react-build-sitemap",
   "version": "0.2.2",
-  "type": "module",
+  "type": "commonjs",
   "description": "simple library that generates a sitemap from your react router",
   "main": "./index.js",
   "scripts": {
